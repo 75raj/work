@@ -1,379 +1,242 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message</title>
+    <title>Upload Countdown</title>
     <style>
         body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            line-height: 1.8;
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 30px 20px;
             margin: 0;
+            min-height: 100vh;
+            position: relative;
+            animation: fadeIn 2s ease-in;
+            /* overflow: hidden hataya - ab scroll hoga */
         }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            border: 3px solid #00ff00;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 0 30px #00ff00;
-            animation: borderGlow 4s infinite alternate;
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        @keyframes borderGlow {
-            0% { box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; border-color: #00ff00; }
-            33% { box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff; border-color: #00ffff; }
-            66% { box-shadow: 0 0 30px #ff00ff, 0 0 60px #ff00ff; border-color: #ff00ff; }
-            100% { box-shadow: 0 0 20px #ffff00, 0 0 50px #ffff00; border-color: #ffff00; }
+
+        /* Fixed background with stars */
+        #particles {
+            position: fixed;  /* fixed kiya taaki scroll pe bhi background na hile */
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a0020 0%, #000 80%);
+            z-index: -1;
+            pointer-events: none;
         }
-        .audio-section {
-            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 40px;
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
-            text-align: center;
+
+        h1 {
+            font-size: 56px;
+            color: #ff4444;
+            text-shadow: 0 0 25px #ff4444;
+            animation: heartbeat 1.8s ease-in-out infinite;
+            margin: 20px 0;
         }
-        .listen-btn {
-            padding: 18px 40px;
-            font-size: 1.5em;
-            font-weight: bold;
-            background: linear-gradient(45deg, #00ffff, #ff00ff);
-            color: black;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 0 30px #00ffff;
-            transition: all 0.3s;
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
         }
-        .listen-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px #ff00ff;
+
+        p {
+            font-size: 26px;
+            margin: 15px 0;
+            color: #ddd;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+
+        .countdown-container {
+            margin: 50px auto;
+            max-width: 700px;
+            padding: 0 10px;
         }
-        .modal-content {
-            background: #111;
-            padding: 30px;
-            border-radius: 20px;
-            border: 3px solid #00ffff;
-            box-shadow: 0 0 40px #00ffff;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-        }
-        .choice-btn {
-            display: block;
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            font-size: 1.3em;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff00ff, #00ffff);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            box-shadow: 0 0 20px #ff00ff;
-        }
-        .choice-btn:hover {
-            transform: scale(1.05);
-        }
-        .player-box {
-            margin-top: 20px;
-            display: none;
-        }
-        .player-box audio {
-            width: 100%;
-            height: 60px;
-        }
-        .player-box audio::-webkit-media-controls-panel {
-            background: linear-gradient(45deg, #00ffff, #ff00ff);
-            border-radius: 10px;
-        }
-        .close-btn {
-            margin-top: 20px;
-            padding: 10px 30px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .line {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 1.2s forwards;
-            margin: 14px 0;
-        }
-        @keyframes fadeInUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .line:nth-child(n) { animation-delay: 0.15s; }
-        .highlight {
-            font-weight: bold;
-            text-shadow: 0 0 12px currentColor;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        .ending {
-            font-size: 1.6em;
-            margin-top: 40px;
-            text-align: center;
-        }
-        /* Countdown Styles */
+
         .countdown-box {
-            background: linear-gradient(135deg, #1a0033, #000);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 40px 0;
-            border: 3px solid #ff00ff;
-            box-shadow: 0 0 30px #ff00ff;
-        }
-        .countdown-title {
-            font-size: 1.4em;
-            color: #ff00ff;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px #ff00ff;
-        }
-        .countdown-timer {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .time-block {
-            background: rgba(255, 0, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            min-width: 80px;
-            border: 1px solid #ff00ff;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
-        }
-        .time-number {
-            font-size: 2em;
+            font-size: 46px;
             font-weight: bold;
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff;
+            margin: 40px auto;
+            padding: 35px;
+            background: rgba(30, 10, 50, 0.7);
+            border-radius: 30px;
+            box-shadow: 
+                0 0 50px rgba(138, 43, 226, 0.9),
+                inset 0 0 30px rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(138, 43, 226, 0.6);
+            color: #fff;
+            text-shadow: 0 0 20px #bb86fc;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            animation: strongFloat 5s ease-in-out infinite;
         }
-        .time-label {
-            font-size: 0.9em;
-            color: #ff00ff;
-            margin-top: 5px;
+
+        @keyframes strongFloat {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+            100% { transform: translateY(0px); }
         }
-        .expired {
-            font-size: 1.8em;
-            color: #f44336;
-            text-shadow: 0 0 15px #f44336;
+
+        .countdown-box:hover {
+            box-shadow: 0 0 70px rgba(138, 43, 226, 1),
+                        0 0 100px rgba(255, 105, 180, 0.6);
+            transform: translateY(-10px) scale(1.02);
         }
-        /* Screenshot Modal */
-        .screenshot-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+
+        .or-text {
+            font-size: 45px;
+            color: #bb86fc;
+            margin: 60px 0;
+            text-shadow: 0 0 25px #bb86fc;
+            animation: pulse 2s infinite;
         }
-        .screenshot-content {
-            max-width: 90%;
-            max-height: 90%;
-            text-align: center;
+
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
         }
-        .screenshot-content img {
-            max-width: 100%;
-            max-height: 80vh;
-            border: 4px solid #00ffff;
-            border-radius: 15px;
-            box-shadow: 0 0 40px #00ffff;
+
+        .progress-bar {
+            height: 12px;
+            background: #222;
+            border-radius: 6px;
+            margin: 25px auto;
+            width: 80%;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
         }
-        .screenshot-close {
-            margin-top: 20px;
-            padding: 12px 40px;
-            font-size: 1.2em;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #bb86fc, #00ffff);
+            width: 0%;
+            transition: width 1s ease;
         }
-        .clickable {
-            color: #00ffff;
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: bold;
+
+        .label {
+            font-size: 22px;
+            color: #aaa;
+            margin-top: 50px;
+            padding-bottom: 50px;
         }
-        .clickable:hover {
-            color: #ff00ff;
-            text-shadow: 0 0 15px #ff00ff;
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.8); }
+        }
+
+        /* Mobile fixes */
+        @media (max-width: 600px) {
+            h1 { font-size: 42px; }
+            p { font-size: 20px; }
+            .countdown-box { 
+                font-size: 36px; 
+                padding: 25px; 
+                min-width: auto;
+                width: 90%;
+            }
+            .or-text { font-size: 36px; margin: 40px 0; }
+            .progress-bar { width: 90%; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="audio-section">
-            <button class="listen-btn" onclick="openModal()">🔊 Listen to My Message</button>
-        </div>
+    <div id="particles"></div>
 
-        <div class="line">dear unknown, hame lagta hai aap personal wo padh ke <span class="highlight" style="color: #FF00FF;">manipulate</span> ho gaye.</div>
-        <div class="line">usme bas ye likha tha ki aap mere liye ek <span class="highlight" style="color: #FF1744;">unknown lucky girl</span> ho, bas.</div>
-        <div class="line">jab-jab aap se baat karta hu, next moment mere sath kuch <span class="highlight" style="color: #00E676;">best</span> hi hota hai.</div>
-        <div class="line">First time jab aap se baat ki — I <span class="highlight" style="color: #00B0FF;">forget Swati</span>.</div>
-        <div class="line">Third time jab aap se baat ki — I started <span class="highlight" style="color: #FFD600;">earning money</span>.</div>
-        <div class="line">Fourth time aap se baat ki — aur aaj shaam ko baat ki to (<span class="highlight" style="color: #FF4081;">3k</span> ka mil gaya, proof ke liye — <span class="clickable" onclick="openScreenshot()">chat screenshot</span>).</div>
-        <div class="line">dekho, aaj phir se <span class="highlight" style="color: #FF9100;">clear</span> kar dete hain —</div>
-        <div class="line">dear, I am a fully <span class="highlight" style="color: #18FFFF;">fun guy</span> and an <span class="highlight" style="color: #FF5722;">overthinker</span>.</div>
-        <div class="line">mere total life me bas <span class="highlight" style="color: #7C4DFF;">7 dost</span> bane hain,</div>
-        <div class="line">jisme ab sirf <span class="highlight" style="color: #E91E63;">2 se connect</span> hai,</div>
-        <div class="line">aur 1–2 month baad wo bhi nahi rahenge.</div>
-        <div class="line">and yes, agar suppose aap bahar ho</div>
-        <div class="line">and if I <span class="highlight" style="color: #76FF03;">laugh</span> ya muskura raha hu</div>
-        <div class="line">to wo aapko ya kisi bhi girl ko dekh ke nahi hota.</div>
-        <div class="line">maine aapko pehle hi mention kiya hai —</div>
-        <div class="line">I’m an <span class="highlight" style="color: #FF5722;">overthinker</span>,</div>
-        <div class="line">aur meri life me har din kuch na kuch <span class="highlight" style="color: #00E676;">best</span> moments hote rehte hain.</div>
-        <div class="line">so mai all time khud ki duniya me hi <span class="highlight" style="color: #FFD600;">busy</span> rehta hu.</div>
-        <div class="line">once again —</div>
-        <div class="line">mai har person ko <span class="highlight" style="color: #FF4081;">respect</span> karta hu, especially <span class="highlight" style="color: #9C27B0;">girls</span>.</div>
-        <div class="line">mai na aapko <span class="highlight" style="color: #00E676;">follow</span> karta hu, na kisi aur girl ko.</div>
-        <div class="line">phir se keh raha hu — mai kisi girl ko <span class="highlight" style="color: #00E676;">follow</span> nahi karta,</div>
-        <div class="line">na hi <span class="highlight" style="color: #F44336;">kabhi karunga</span>.</div>
-        <div class="line">aur aap se face-to-face baat bhi nahi kar sakta, pata nahi kyu —</div>
-        <div class="line">jaise hi aap se kuch question puchne ka sochta hu,</div>
-        <div class="line">meri <span class="highlight" style="color: #FF5252;">heartbeat</span> high ho jaati hai.</div>
-        <div class="line">to agar kahi pe kuch word extra lage to <span class="highlight" style="color: #4CAF50;">sorry</span></div>
-        <div class="line">right now I’m <span class="highlight" style="color: #FFD600;">busy</span> — kaam bhi hai aur <span class="highlight" style="color: #AB47BC;">exam</span> bhi hai.</div>
-        <div class="line">ye meri life ka <span class="highlight" style="color: #536DFE;">first idea</span> hai jo mai kisi unknown girl ko bata raha hu.</div>
-        <div class="line">to mai <span class="highlight" style="color: #00C853;">countdown</span> add kar dunga kab khatam hoga,</div>
-        <div class="line">and again, <span class="highlight" style="color: #4CAF50;">sorry</span> for wasting your time.</div>
-        <div class="line">agar aapko lagta hai ki mai aapko <span class="highlight" style="color: #FF1744;">disturb</span> kar raha hu to <span class="highlight" style="color: #4CAF50;">sorry</span>,</div>
-        <div class="line"><span class="highlight" style="color: #FF4081;">2026</span> me I will never <span class="highlight" style="color: #FF1744;">disturb</span> you — it’s my <span class="highlight" style="color: #00E5FF;">promise</span>.</div>
+    <h1>Sorry dear </h1>
+  
+    <p>I will upload last this is fully fix</p>
+    <p>25-12-2025</p>
+    <p>Time: 9 AM ya 7 PM</p>
 
-        <!-- Countdown Box -->
-        <div class="countdown-box">
-            <div class="countdown-title">Countdown to 24 Dec 2025, 7:00 PM</div>
-            <div id="countdown" class="countdown-timer">
-                <div class="time-block">
-                    <div id="days" class="time-number">00</div>
-                    <div class="time-label">Days</div>
-                </div>
-                <div class="time-block">
-                    <div id="hours" class="time-number">00</div>
-                    <div class="time-label">Hours</div>
-                </div>
-                <div class="time-block">
-                    <div id="minutes" class="time-number">00</div>
-                    <div class="time-label">Minutes</div>
-                </div>
-                <div class="time-block">
-                    <div id="seconds" class="time-number">00</div>
-                    <div class="time-label">Seconds</div>
-                </div>
-            </div>
-            <div id="expired" class="expired" style="display:none;">Time's Up!</div>
-        </div>
+    <div class="countdown-container">
+        <h2 style="color:#a0ffff; text-shadow: 0 0 25px #a0ffff;">Countdown to 25 Dec 2025, 9:00 AM</h2>
+        <div id="countdown9am" class="countdown-box"></div>
+        <div class="progress-bar"><div id="progress9" class="progress-fill"></div></div>
 
-        <div class="line ending">
-            <span class="highlight" style="color: #FFFF00;">Thank you</span> so much. 
-            <span class="highlight" style="color: #FF1744;">Bye</span>.
-        </div>
+        <div class="or-text">OR</div>
+
+        <h2 style="color:#b0ff9e; text-shadow: 0 0 25px #ff9e9e;">Countdown to 25 Dec 2025, 7:00 PM</h2>
+        <div id="countdown7pm" class="countdown-box"></div>
+        <div class="progress-bar"><div id="progress7" class="progress-fill"></div></div>
     </div>
 
-    <!-- Audio Modal -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h2 style="color:#00ffff; text-shadow:0 0 15px #00ffff;">Choose Language</h2>
-            <button class="choice-btn" onclick="playHindi()">🇮🇳 हिंदी में सुनें (1.mp3)</button>
-            <button class="choice-btn" onclick="playEnglish()">🇬🇧 English में सुनें (2.mp3)</button>
-            <div id="hindi-player" class="player-box">
-                <h3 style="color:#ff00ff;">Hindi Audio - 1.mp3</h3>
-                <audio controls controlsList="nodownload">
-                    <source src="1.mp3" type="audio/mpeg">
-                    Browser audio support nahi karta.
-                </audio>
-            </div>
-            <div id="english-player" class="player-box">
-                <h3 style="color:#ff00ff;">English Audio - 2.mp3</h3>
-                <audio controls controlsList="nodownload">
-                    <source src="2.mp3" type="audio/mpeg">
-                    Browser audio support nahi karta.
-                </audio>
-            </div>
-            <button class="close-btn" onclick="closeModal()">Close</button>
-        </div>
-    </div>
+    <p class="label">Remaining time until upload</p>
 
-    <!-- Screenshot Modal -->
-    <div id="screenshot-modal" class="screenshot-modal">
-        <div class="screenshot-content">
-            <img src="1.png" alt="Chat Screenshot">
-            <br>
-            <button class="screenshot-close" onclick="closeScreenshot()">Close</button>
-        </div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script>
-        // Countdown Script
-        const countdownDate = new Date("2025-12-24T19:00:00").getTime(); // 7:00 PM IST
+        // Twinkling stars
+        const particles = document.getElementById('particles');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.style.position = 'absolute';
+            star.style.width = '3px';
+            star.style.height = '3px';
+            star.style.background = 'white';
+            star.style.borderRadius = '50%';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.opacity = Math.random() * 0.7 + 0.3;
+            star.style.boxShadow = '0 0 ' + (Math.random() * 12 + 8) + 'px white';
+            star.style.animation = 'twinkle ' + (Math.random() * 5 + 5) + 's infinite';
+            particles.appendChild(star);
+        }
 
-        const x = setInterval(function() {
-            const now = new Date().getTime();
-            const distance = countdownDate - now;
+        function updateCountdown(targetDate, elementId, progressId, confettiColor = ['#ff4444', '#bb86fc']) {
+            const countdownElement = document.getElementById(elementId);
+            const progressElement = document.getElementById(progressId);
+            const startDate = new Date("2024-11-01T00:00:00").getTime();
+            const totalTime = targetDate - startDate;
 
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            function calculate() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
 
-            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
-            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
-            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
-            document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+                if (distance < 0) {
+                    countdownElement.innerHTML = "<span style='color:#ff4444; font-size:56px;'>Time Over! 🎉 Upload Now! 🎉</span>";
+                    progressElement.style.width = "100%";
+                    confetti({
+                        particleCount: 300,
+                        spread: 120,
+                        colors: confettiColor,
+                        origin: { y: 0.6 }
+                    });
+                    return;
+                }
 
-            if (distance < 0) {
-                clearInterval(x);
-                document.getElementById("countdown").style.display = "none";
-                document.getElementById("expired").style.display = "block";
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownElement.innerHTML = 
+                    `<strong>${days}</strong> Days 
+                     <strong>${hours}</strong> Hours 
+                     <strong>${minutes}</strong> Minutes 
+                     <strong>${seconds}</strong> Seconds`;
+
+                const elapsed = now - startDate;
+                const percent = Math.min(100, Math.max(0, (elapsed / totalTime) * 100));
+                progressElement.style.width = percent + '%';
+
+                setTimeout(calculate, 1000);
             }
-        }, 1000);
-
-        // Audio Modal Functions
-        function openModal() {
-            document.getElementById('modal').style.display = 'flex';
-            document.getElementById('hindi-player').style.display = 'none';
-            document.getElementById('english-player').style.display = 'none';
-        }
-        function playHindi() {
-            document.getElementById('hindi-player').style.display = 'block';
-            document.getElementById('english-player').style.display = 'none';
-        }
-        function playEnglish() {
-            document.getElementById('english-player').style.display = 'block';
-            document.getElementById('hindi-player').style.display = 'none';
-        }
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.querySelectorAll('audio').forEach(a => a.pause());
+            calculate();
         }
 
-        // Screenshot Modal Functions
-        function openScreenshot() {
-            document.getElementById('screenshot-modal').style.display = 'flex';
-        }
-        function closeScreenshot() {
-            document.getElementById('screenshot-modal').style.display = 'none';
-        }
+        const target9am = new Date("2025-12-25T09:00:00").getTime();
+        const target7pm = new Date("2025-12-25T19:00:00").getTime();
+
+        updateCountdown(target9am, "countdown9am", "progress9", ['#00ffff', '#a0ffff', '#bb86fc']);
+        updateCountdown(target7pm, "countdown7pm", "progress7", ['#ff4444', '#ff9e9e', '#hotpink']);
     </script>
 </body>
 </html>
