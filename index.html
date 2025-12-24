@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.8;
+            margin: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            border: 3px solid #00ff00;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px #00ff00;
+            animation: borderGlow 4s infinite alternate;
+        }
+        @keyframes borderGlow {
+            0% { box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; border-color: #00ff00; }
+            33% { box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff; border-color: #00ffff; }
+            66% { box-shadow: 0 0 30px #ff00ff, 0 0 60px #ff00ff; border-color: #ff00ff; }
+            100% { box-shadow: 0 0 20px #ffff00, 0 0 50px #ffff00; border-color: #ffff00; }
+        }
+        .audio-section {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+            text-align: center;
+        }
+        .listen-btn {
+            padding: 18px 40px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            color: black;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 30px #00ffff;
+            transition: all 0.3s;
+        }
+        .listen-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px #ff00ff;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #111;
+            padding: 30px;
+            border-radius: 20px;
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 40px #00ffff;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .choice-btn {
+            display: block;
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #ff00ff;
+        }
+        .choice-btn:hover {
+            transform: scale(1.05);
+        }
+        .player-box {
+            margin-top: 20px;
+            display: none;
+        }
+        .player-box audio {
+            width: 100%;
+            height: 60px;
+        }
+        .player-box audio::-webkit-media-controls-panel {
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            border-radius: 10px;
+        }
+        .close-btn {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .line {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1.2s forwards;
+            margin: 14px 0;
+        }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .line:nth-child(n) { animation-delay: 0.15s; }
+        .highlight {
+            font-weight: bold;
+            text-shadow: 0 0 12px currentColor;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .ending {
+            font-size: 1.6em;
+            margin-top: 40px;
+            text-align: center;
+        }
+        /* Countdown Styles */
+        .countdown-box {
+            background: linear-gradient(135deg, #1a0033, #000);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+            border: 3px solid #ff00ff;
+            box-shadow: 0 0 30px #ff00ff;
+        }
+        .countdown-title {
+            font-size: 1.4em;
+            color: #ff00ff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .time-block {
+            background: rgba(255, 0, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 80px;
+            border: 1px solid #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+        .time-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .time-label {
+            font-size: 0.9em;
+            color: #ff00ff;
+            margin-top: 5px;
+        }
+        .expired {
+            font-size: 1.8em;
+            color: #f44336;
+            text-shadow: 0 0 15px #f44336;
+        }
+        /* Screenshot Modal */
+        .screenshot-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .screenshot-content {
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+        }
+        .screenshot-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border: 4px solid #00ffff;
+            border-radius: 15px;
+            box-shadow: 0 0 40px #00ffff;
+        }
+        .screenshot-close {
+            margin-top: 20px;
+            padding: 12px 40px;
+            font-size: 1.2em;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .clickable {
+            color: #00ffff;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .clickable:hover {
+            color: #ff00ff;
+            text-shadow: 0 0 15px #ff00ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="audio-section">
+            <button class="listen-btn" onclick="openModal()">🔊 Listen to My Message</button>
+        </div>
+
+        <div class="line">dear unknown, hame lagta hai aap personal wo padh ke <span class="highlight" style="color: #FF00FF;">manipulate</span> ho gaye.</div>
+        <div class="line">usme bas ye likha tha ki aap mere liye ek <span class="highlight" style="color: #FF1744;">unknown lucky girl</span> ho, bas.</div>
+        <div class="line">jab-jab aap se baat karta hu, next moment mere sath kuch <span class="highlight" style="color: #00E676;">best</span> hi hota hai.</div>
+        <div class="line">First time jab aap se baat ki — I <span class="highlight" style="color: #00B0FF;">forget Swati</span>.</div>
+        <div class="line">Third time jab aap se baat ki — I started <span class="highlight" style="color: #FFD600;">earning money</span>.</div>
+        <div class="line">Fourth time aap se baat ki — aur aaj shaam ko baat ki to (<span class="highlight" style="color: #FF4081;">3k</span> ka mil gaya, proof ke liye — <span class="clickable" onclick="openScreenshot()">chat screenshot</span>).</div>
+        <div class="line">dekho, aaj phir se <span class="highlight" style="color: #FF9100;">clear</span> kar dete hain —</div>
+        <div class="line">dear, I am a fully <span class="highlight" style="color: #18FFFF;">fun guy</span> and an <span class="highlight" style="color: #FF5722;">overthinker</span>.</div>
+        <div class="line">mere total life me bas <span class="highlight" style="color: #7C4DFF;">7 dost</span> bane hain,</div>
+        <div class="line">jisme ab sirf <span class="highlight" style="color: #E91E63;">2 se connect</span> hai,</div>
+        <div class="line">aur 1–2 month baad wo bhi nahi rahenge.</div>
+        <div class="line">and yes, agar suppose aap bahar ho</div>
+        <div class="line">and if I <span class="highlight" style="color: #76FF03;">laugh</span> ya muskura raha hu</div>
+        <div class="line">to wo aapko ya kisi bhi girl ko dekh ke nahi hota.</div>
+        <div class="line">maine aapko pehle hi mention kiya hai —</div>
+        <div class="line">I’m an <span class="highlight" style="color: #FF5722;">overthinker</span>,</div>
+        <div class="line">aur meri life me har din kuch na kuch <span class="highlight" style="color: #00E676;">best</span> moments hote rehte hain.</div>
+        <div class="line">so mai all time khud ki duniya me hi <span class="highlight" style="color: #FFD600;">busy</span> rehta hu.</div>
+        <div class="line">once again —</div>
+        <div class="line">mai har person ko <span class="highlight" style="color: #FF4081;">respect</span> karta hu, especially <span class="highlight" style="color: #9C27B0;">girls</span>.</div>
+        <div class="line">mai na aapko <span class="highlight" style="color: #00E676;">follow</span> karta hu, na kisi aur girl ko.</div>
+        <div class="line">phir se keh raha hu — mai kisi girl ko <span class="highlight" style="color: #00E676;">follow</span> nahi karta,</div>
+        <div class="line">na hi <span class="highlight" style="color: #F44336;">kabhi karunga</span>.</div>
+        <div class="line">aur aap se face-to-face baat bhi nahi kar sakta, pata nahi kyu —</div>
+        <div class="line">jaise hi aap se kuch question puchne ka sochta hu,</div>
+        <div class="line">meri <span class="highlight" style="color: #FF5252;">heartbeat</span> high ho jaati hai.</div>
+        <div class="line">to agar kahi pe kuch word extra lage to <span class="highlight" style="color: #4CAF50;">sorry</span></div>
+        <div class="line">right now I’m <span class="highlight" style="color: #FFD600;">busy</span> — kaam bhi hai aur <span class="highlight" style="color: #AB47BC;">exam</span> bhi hai.</div>
+        <div class="line">ye meri life ka <span class="highlight" style="color: #536DFE;">first idea</span> hai jo mai kisi unknown girl ko bata raha hu.</div>
+        <div class="line">to mai <span class="highlight" style="color: #00C853;">countdown</span> add kar dunga kab khatam hoga,</div>
+        <div class="line">and again, <span class="highlight" style="color: #4CAF50;">sorry</span> for wasting your time.</div>
+        <div class="line">agar aapko lagta hai ki mai aapko <span class="highlight" style="color: #FF1744;">disturb</span> kar raha hu to <span class="highlight" style="color: #4CAF50;">sorry</span>,</div>
+        <div class="line"><span class="highlight" style="color: #FF4081;">2026</span> me I will never <span class="highlight" style="color: #FF1744;">disturb</span> you — it’s my <span class="highlight" style="color: #00E5FF;">promise</span>.</div>
+
+        <!-- Countdown Box -->
+        <div class="countdown-box">
+            <div class="countdown-title">Countdown to 24 Dec 2025, 7:00 PM</div>
+            <div id="countdown" class="countdown-timer">
+                <div class="time-block">
+                    <div id="days" class="time-number">00</div>
+                    <div class="time-label">Days</div>
+                </div>
+                <div class="time-block">
+                    <div id="hours" class="time-number">00</div>
+                    <div class="time-label">Hours</div>
+                </div>
+                <div class="time-block">
+                    <div id="minutes" class="time-number">00</div>
+                    <div class="time-label">Minutes</div>
+                </div>
+                <div class="time-block">
+                    <div id="seconds" class="time-number">00</div>
+                    <div class="time-label">Seconds</div>
+                </div>
+            </div>
+            <div id="expired" class="expired" style="display:none;">Time's Up!</div>
+        </div>
+
+        <div class="line ending">
+            <span class="highlight" style="color: #FFFF00;">Thank you</span> so much. 
+            <span class="highlight" style="color: #FF1744;">Bye</span>.
+        </div>
+    </div>
+
+    <!-- Audio Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color:#00ffff; text-shadow:0 0 15px #00ffff;">Choose Language</h2>
+            <button class="choice-btn" onclick="playHindi()">🇮🇳 हिंदी में सुनें (1.mp3)</button>
+            <button class="choice-btn" onclick="playEnglish()">🇬🇧 English में सुनें (2.mp3)</button>
+            <div id="hindi-player" class="player-box">
+                <h3 style="color:#ff00ff;">Hindi Audio - 1.mp3</h3>
+                <audio controls controlsList="nodownload">
+                    <source src="1.mp3" type="audio/mpeg">
+                    Browser audio support nahi karta.
+                </audio>
+            </div>
+            <div id="english-player" class="player-box">
+                <h3 style="color:#ff00ff;">English Audio - 2.mp3</h3>
+                <audio controls controlsList="nodownload">
+                    <source src="2.mp3" type="audio/mpeg">
+                    Browser audio support nahi karta.
+                </audio>
+            </div>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Screenshot Modal -->
+    <div id="screenshot-modal" class="screenshot-modal">
+        <div class="screenshot-content">
+            <img src="1.png" alt="Chat Screenshot">
+            <br>
+            <button class="screenshot-close" onclick="closeScreenshot()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Countdown Script
+        const countdownDate = new Date("2025-12-24T19:00:00").getTime(); // 7:00 PM IST
+
+        const x = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countdownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days < 10 ? "0" + days : days;
+            document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("countdown").style.display = "none";
+                document.getElementById("expired").style.display = "block";
+            }
+        }, 1000);
+
+        // Audio Modal Functions
+        function openModal() {
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('hindi-player').style.display = 'none';
+            document.getElementById('english-player').style.display = 'none';
+        }
+        function playHindi() {
+            document.getElementById('hindi-player').style.display = 'block';
+            document.getElementById('english-player').style.display = 'none';
+        }
+        function playEnglish() {
+            document.getElementById('english-player').style.display = 'block';
+            document.getElementById('hindi-player').style.display = 'none';
+        }
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.querySelectorAll('audio').forEach(a => a.pause());
+        }
+
+        // Screenshot Modal Functions
+        function openScreenshot() {
+            document.getElementById('screenshot-modal').style.display = 'flex';
+        }
+        function closeScreenshot() {
+            document.getElementById('screenshot-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
